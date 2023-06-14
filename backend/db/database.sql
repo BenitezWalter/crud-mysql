@@ -1,0 +1,11 @@
+CREATE DATABASE IF NOT EXISTS dockerdb;
+
+USE dockerdb;
+
+CREATE TABLE product (
+    id INT(11) NOT NULL AUTO_INCREMENT,
+    name VARCHAR(45) DEFAULT NULL,
+    description VARCHAR(100) DEFAULT NULL,
+    price INT(10) DEFAULT NULL,
+    PRIMARY KEY (id)
+);
