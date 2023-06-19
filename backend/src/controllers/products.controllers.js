@@ -14,7 +14,21 @@ export const createProduct = async (req, res) => {
       price,
     });
   } catch (error) {
-    return res.json({ msg: "Algo salio mal" });
+    return res.json({ msg: "Algo salio mal", error });
+  }
+};
+
+export const getProduct = async (req, res) => {
+  try {
+    const [result] = await pool.query("SELECT * FROM product WHERE id = ?", [
+      req.params.id,
+    ]);
+
+    if (result.length === 0) return res.json({ msg: "Producto no encontrado" });
+
+    res.json(result[0]);
+  } catch (error) {
+    return res.json({ message: error.message });
   }
 };
 
@@ -57,8 +71,8 @@ export const deleteProduct = async (req, res) => {
       return res.json({ msg: "Producto no encontrado" });
     }
     res.json({
-      msg:"Producto eliminado"
-    })
+      msg: "Producto eliminado",
+    });
   } catch (error) {
     return res.json({ msg: "Algo salio mal" });
   }

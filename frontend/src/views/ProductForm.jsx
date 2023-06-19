@@ -1,41 +1,84 @@
 import React from "react";
 import { Form, Formik } from "formik";
-import { createProductRequest } from "../../api/products.api";
-import { ProductContext } from "../../context/ProductContext";
-import { useContext } from "react";
+import {
+  createProductRequest,
+  updateProductRequest,
+} from "../api/products.api";
+
+import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getProductRequest } from "../api/products.api";
+import { useNavigate } from "react-router-dom";
 function ProductForm() {
-  const { product, setProduct } = useContext(ProductContext);
+  const [productId, setProductId] = useState({
+    name: "",
+    description: "",
+    price: "",
+  });
+
+  const handleGetProduct = async (id) => {
+    try {
+      const response = await getProductRequest(id);
+      return response.data;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const params = useParams();
+  const navigate = useNavigate();
+  useEffect(() => {
+    const loadProduct = async () => {
+      if (params.id) {
+        const product = await handleGetProduct(params.id);
+        setProductId({
+          name: product.name,
+          description: product.description,
+          price: product.price,
+        });
+      }
+    };
+    loadProduct();
+  }, []);
+
   return (
     <div>
       <Formik
-        initialValues={{
-          name: "",
-          description: "",
-          price: "",
-        }}
+        initialValues={productId}
+        enableReinitialize={true}
         onSubmit={async (values, actions) => {
-          
-          try {
-            const response = await createProductRequest(values);
-            console.log(response.data);
-            setProduct([...product, response.data]);
-            actions.resetForm();
-          } catch (error) {
-            console.log(error);
+          console.log(values);
+          if (params.id) {
+            await updateProductRequest(params.id, values);
+          } else {
+            await createProductRequest(values);
           }
+          navigate("/");
+          setProductId({
+            name: "",
+            description: "",
+            price: "",
+          });
         }}
       >
         {({ handleChange, handleSubmit, values, isSubmitting }) => (
-          <Form onSubmit={handleSubmit}>
-            <label>Name</label>
+          <Form
+            onSubmit={handleSubmit}
+            className="bg-slate-300 max-w-sm rounded-md p-4 mx-auto mt-10"
+          >
+            <h1 className="text-xl font-bold uppercase text-center">
+              {params.id ? "Editar producto" : "Crear producto"}
+            </h1>
+            <label className="block">Name</label>
             <input
               type="text"
               name="name"
               placeholder="Nombre del producto"
               onChange={handleChange}
               value={values.name}
+              className="px-2 py-1 rounded-sm w-full"
             />
-            <label>Description</label>
+            <label className="block">Description</label>
             <textarea
               type="text"
               name="description"
@@ -43,16 +86,22 @@ function ProductForm() {
               placeholder="Descripcion del producto"
               onChange={handleChange}
               value={values.description}
+              className="px-2 py-1 rounded-sm w-full"
             ></textarea>
-            <label>Price</label>
+            <label className="block">Price</label>
             <input
               type="number"
               name="price"
               placeholder="Precio del producto"
               onChange={handleChange}
               value={values.price}
+              className="px-2 py-1 rounded-sm w-full"
             />
-            <button type="submit" disabled={isSubmitting}>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="block bg-indigo-500 px-2 py-1 text-white w-full rounded-md"
+            >
               {isSubmitting ? "Guardando" : "Guardar"}
             </button>
           </Form>
